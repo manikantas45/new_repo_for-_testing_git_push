@@ -1,0 +1,154 @@
+What Is Amazon VPC? 
+- Amazon Virtual Private Cloud (Amazon VPC) enables you to launch AWS resources into a virtual network that you've defined.
+- Amazon VPC lets you provision a logically isolated section of the Amazon Web Services (AWS) Cloud.
+
+IP Classses:
+Class A: 10.10.10.1
+Class B: 172.16.0.1
+Class C: 192.168.0.1
+
+VPC CIDR: 10.10.0.0/16
+
+https://www.davidc.net/sites/default/subnets/subnets.html
+
+IPv4 in VPC:
+You can have multiple VPCs in CIDR block for the VPC from 10.10.0.0/16 to 10.10.0.0/28 range
+
+we are choosing 10.1.0.0/24
+
+Number of IP address -> 2^(32-24) -> 2⁸ -> 256
+
+Assuming equal number of IP addresses for the each subnet,
+
+Number of IP addresses for a subnet = 256/4 = 64
+
+Here is the IP address distribution for the above 4 subnets
+
+Public Subnet 1 -> 10.1.0.0/26 (IP range — 10.1.0.0 to 10.1.0.63)
+
+Public Subnet 2 -> 10.1.0.64/26 (IP range — 10.1.0.64 to 10.1.0.127)
+
+Private Subnet 1-> 10.1.0.128/26 (IP range — 10.1.0.128 to 10.1.0.191)
+
+Private Subnet 2 ->10.1.0.192/26 (IP range — 10.1.0.192 to 10.1.0.255)
+    
+a region (max is 5 per region, but it is a soft limit)
+
+Assignment: AWS services limit per account
+
+Subnet Range Caculation Link: https://www.davidc.net/sites/default/subnets/subnets.html
+
+
+Max CIDR per VPC is 5. For each CIDR
+min size is /28: 16 IP addresses
+max size is /16: 65536 IP addresses
+Your VPC CIDR should not overlap with your other networks
+
+AWS reserves 5 IPs (first 4 and last 1 in your IP ranges) in each subnet. 
+These 5 IPs are not available for usage and cannot be assigned to an instance.
+For example, if your CIDR block is 10.0.0.0/24, then the reserved IPs are:
+
+10.1.0.0: Network address
+10.1.0.1: Reserved by AWS for the VPC router
+10.1.0.2: Reserved by AWS for mapping to AWS-provided DNS
+10.1.0.3: Reserved by AWS for future usage
+10.1.0.255: Network broadcast address. AWS does not support broadcast in a VPC
+
+
+Subnet Caclation URL:
+https://www.davidc.net/sites/default/subnets/subnets.html
+
+Amazon VPC is the networking layer for Amazon Resources: (ex: ec2, rds, cache, efs etc)
+Major topics:
+ 1.Subnets
+ 2.NACL
+ 3.Internet Gateway 
+ 4.NAT gateways
+ 5.Route tables 
+ 6.Security Group 
+ 
+
+1. Subnets:
+- A range of IP address in your VPC
+- An IP address has numbers that identify the network ID and the host ID.
+
+   a.Public Subnets: If a subnet has route table to an aws Internet Gateway it is called a public subnet.
+   b.Private Subnets: If a subnet has route table to an aws Nat Gateway it is called a private subnet or doesn't have route to Internet Gateway.
+  
+
+2. NaCL: 
+- A network access control list (ACL) is an optional layer of security for your VPC that acts as a firewall for controlling traffic in and out of one or more subnets. 
+  a.Public Nacl: If a acl has public subnet associations it is called a public Nacl
+  b.Private Nacl: If a Nacl has private subnet associations it is called a private Nacl
+
+3.Internet Gateway(IGW): 
+- Internet Gateway (IGW) allows instances with public IPs to access the internet
+
+4.Nat Gateway (NAT):
+- NAT stands for Network Address Translation
+- NAT Gateway does something similar to Internet Gateway (IGW), but it only works one way, 
+  Instances in a private subnet can connect to services outside your VPC and also external services cannot initiate a connection with those instances
+
+5.Route Tables: 
+- A route table containsa set of rules,called routes,that are used to determine where network traffic is directed
+- Each subnet in our VPC must be associated with a route table,the table controls the routing for the subnet
+- A subnet can only be associated with one route table at a time,but we can associate multiple subnets with the same route table
+
+  a.Public RouteTable:  If a subnet has associated with public route table it is called a Public RouteTable
+  b.Private RouteTable:  If a subnet has associated with private route table it is called a private RouteTable 
+
+6 Security Group:
+- Security Group - security layer to EC2 instances that control both inbound and outbound traffic at the instance level
+- Security groups act at the instance level, not the subnet level
+
+
+Interview Questions:
+
+Q1)what is the differences between Nacl and Security Group?
+
+Nacl:
+1. It supports both allow and deny rules, and by default, all the rules are denied. You need to add the rule which you can either allow or deny it
+2. Network ACLs are stateless. This means any changes applied to an incoming rule will not beapplied to the outgoing rule. 
+   e.g. If you allow an incoming port 80, you would also need to apply the rule for outgoing traffic.
+3. It is associated with a subnet
+4. Rules are evaluated in order, starting from the lowest number
+5. NACL has applied automatically to all the instances which are associated with an instance
+6. It is the second layer of defense
+
+Security Group:
+1. It supports only allow rules, and by default, all the rules are denied. You cannot deny the rule for establishing a connection
+2. Security groups are stateful. This means any changes applied to an incoming rule will be automatically applied to the outgoing rule.
+   e.g. If you allow an in coming port 80, the outgoing port 80 will be automatically opened..
+3. It is associated with an EC2 instance
+4. All the rules are evaluated before deciding whether to allow the traffic.
+5. Security Group is applied to an instance only when you specify a security group while launching an instance.
+6. It is the first layer of defense. 
+
+
+What is the  differences between Public IP Address and Private Address?
+Public IP Address:
+1. External(Global)reach
+2. Used for communicating outside  your private network, over the internet
+3. Found by Googling "what is my IP address"
+4. Assigned and controlling by your internt service provider
+5. Not free
+6. Any number not included in the reserved private IP address range  Ex=8.8.8.8
+
+ Private IP Address:
+ 1. Internal(local) reach
+ 2. Used for communicating within your private network, with other devices in the same network.
+ 3. Found via your devices's internal settings
+ 4. Assigned to your specific device within a private Network
+ 5. free
+ 6. Private IP ranges
+ - 10.0.0.0. to 10.255.255.255
+ - 172.16.0.0 to 172.3.255.255
+ - 192.168.0.0 to 192.168.255.255
+
+
+
+
+
+
+
+
